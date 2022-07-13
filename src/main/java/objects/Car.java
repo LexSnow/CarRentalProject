@@ -1,4 +1,4 @@
-package main.objects;
+package objects;
 
 import java.util.Objects;
 

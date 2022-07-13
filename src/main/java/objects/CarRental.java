@@ -1,4 +1,4 @@
-package main.objects;
+package objects;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -7,9 +7,8 @@ import java.util.Scanner;
 import java.time.format.DateTimeFormatter;
 import java.time.LocalDateTime;
 import java.util.function.Predicate;
-import static java.lang.Integer.parseInt;
-import main.exceptions.*;
-import main.interfaces.CarRentalInterface;
+import exceptions.InvalidCarException;
+import interfaces.CarRentalInterface;
 
 public class CarRental implements CarRentalInterface {
     final DateTimeFormatter dtf;
@@ -113,13 +112,13 @@ public class CarRental implements CarRentalInterface {
 
     public ArrayList<Car> readFile() {
         ArrayList<Car> cars = new ArrayList<>();
-        String file = "resources/cars.txt";
+        String file = "main/resources/cars.txt";
         try {
             Scanner fileScan = new Scanner(new File(file));
             while (fileScan.hasNextLine()) {
                 String output = fileScan.nextLine();
                 String[] parts = output.split(", ");
-                Car car = new Car(parts[0], parts[1], parts[2], parseInt(parts[3]), parseInt(parts[4]));
+                Car car = new Car(parts[0], parts[1], parts[2], Integer.parseInt(parts[3]), Integer.parseInt(parts[4]));
                 cars.add(car);
             }
         } catch (Exception e) {

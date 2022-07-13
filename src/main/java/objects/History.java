@@ -1,4 +1,4 @@
-package main.objects;
+package objects;
 
 public class History {
     private final Car car;

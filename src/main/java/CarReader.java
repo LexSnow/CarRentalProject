@@ -1,7 +1,5 @@
-package main;
-
-import main.exceptions.InvalidCarException;
-import main.objects.CarRental;
+import objects.CarRental;
+import exceptions.InvalidCarException;
 
 import java.util.*;
 
