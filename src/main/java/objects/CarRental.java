@@ -1,14 +1,19 @@
 package objects;
 
-import java.io.File;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Scanner;
 import java.time.format.DateTimeFormatter;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.function.Predicate;
+
 import exceptions.InvalidCarException;
 import interfaces.CarRentalInterface;
+import mapservice.DistanceAnalyzer;
 
 public class CarRental implements CarRentalInterface {
     final DateTimeFormatter dtf;
@@ -33,9 +38,9 @@ public class CarRental implements CarRentalInterface {
                         "\n6 - Kończymy na dziś");
     }
 
-    public void rent(String city) throws InvalidCarException {
-        if (cars.stream().noneMatch(c -> c.getCity().equals(city))) {
-            throw new InvalidCarException("Przepraszamy, w tym mieście nie ma dostępnych samochodów.");
+    public void rent(String city) {
+        if (cars.stream().noneMatch(c -> c.getCity().equals(city) && !(c.isRented()))) {
+            findNearestCar(city);
         }
         for (Car car : cars) {
             if (car.getCity().equals(city)) {
@@ -48,9 +53,10 @@ public class CarRental implements CarRentalInterface {
                 break;
             }
         }
+
     }
 
-    public void returnCar(String city, String brand, String model, int year, int state) throws InvalidCarException{
+    public void returnCar(String city, String brand, String model, int year, int state) throws InvalidCarException {
         for (History history : rentalHistory) {
             if (history.getCar().getCity().equalsIgnoreCase(city)
                     && history.getCar().getBrand().equalsIgnoreCase(brand)
@@ -99,6 +105,7 @@ public class CarRental implements CarRentalInterface {
                     .forEach(System.out::println);
         }
     }
+
     public void getRentalHistory() throws InvalidCarException {
         if (rentalHistory.isEmpty()) {
             throw new InvalidCarException("Historia jest pusta.");
@@ -110,16 +117,43 @@ public class CarRental implements CarRentalInterface {
         }
     }
 
+    public Car findNearestCar(String city) {
+        DistanceAnalyzer analyzer = new DistanceAnalyzer();
+        Car nearestCar = null;
+        for(Car car: cars){
+            if(!(car.isRented())){
+                nearestCar = car;
+                break;
+            } else {
+                System.out.println("Nie ma dostępnych samochodów");
+            }
+        }
+        for (Car value : cars) {
+            double distance = analyzer.calculateDistance(city, value.getCity());
+            value.setDistanceFromOrigin(distance);
+            assert nearestCar != null;
+            if (value.getDistanceFromOrigin() < nearestCar.getDistanceFromOrigin() && !(nearestCar.isRented())) {
+                nearestCar = value;
+            }
+        }
+        assert nearestCar != null;
+        System.out.println("Najbliższy samochód jest w mieście " + nearestCar.getCity() + ", które jest oddalone o " + nearestCar.getDistanceFromOrigin() + "km. Czy chcesz go wypożyczyć? Y/N");
+        return nearestCar;
+}
+
     public ArrayList<Car> readFile() {
         ArrayList<Car> cars = new ArrayList<>();
-        String file = "main/resources/cars.txt";
+
+        InputStream file = this.getClass().getResourceAsStream("/resources/cars.txt");
         try {
-            Scanner fileScan = new Scanner(new File(file));
-            while (fileScan.hasNextLine()) {
-                String output = fileScan.nextLine();
-                String[] parts = output.split(", ");
+            InputStreamReader fileScan = new InputStreamReader(Objects.requireNonNull(file), StandardCharsets.UTF_8);
+            BufferedReader reader = new BufferedReader(fileScan);
+            String temp = reader.readLine();
+            while (temp != null) {
+                String[] parts = temp.split(", ");
                 Car car = new Car(parts[0], parts[1], parts[2], Integer.parseInt(parts[3]), Integer.parseInt(parts[4]));
                 cars.add(car);
+                temp = reader.readLine();
             }
         } catch (Exception e) {
             System.out.println("Error: " + e.getMessage());

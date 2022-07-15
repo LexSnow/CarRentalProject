@@ -10,6 +10,15 @@ public class Car {
     private int state;
     private String fromDate;
     private boolean rented;
+    private double DistanceFromOrigin;
+
+    public double getDistanceFromOrigin() {
+        return DistanceFromOrigin;
+    }
+
+    public void setDistanceFromOrigin(double distanceFromOrigin) {
+        DistanceFromOrigin = distanceFromOrigin;
+    }
 
     public Car(String city, String brand, String model, int year, int state) {
         this.city = city;
@@ -30,7 +39,7 @@ public class Car {
 
 
     public String getCity() {
-        return city;
+        return this.city;
     }
 
     public String getBrand() {

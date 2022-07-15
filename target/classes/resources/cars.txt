@@ -1,0 +1,5 @@
+Białystok, Opel, Corsa, 2015, 235523
+Białystok, Opel, Astra, 2012, 352233
+Warszawa, BMW, 3, 2018, 12355
+Białystok, Fiat, Panda, 2008, 556234
+Poznań, Mazda, 3, 2022, 0

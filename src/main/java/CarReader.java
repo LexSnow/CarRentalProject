@@ -1,6 +1,10 @@
+import objects.Car;
 import objects.CarRental;
 import exceptions.InvalidCarException;
+import mapservice.DistanceAnalyzer;
 
+import java.nio.charset.Charset;
+import java.sql.SQLOutput;
 import java.util.*;
 
 import static java.lang.Integer.parseInt;
@@ -16,12 +20,12 @@ public class CarReader {
             if (input.equals("1")) {
                 System.out.println("Jakie miasto?");
                 String city = scanner.nextLine();
-                try {
-                    rental.rent(city);
-                }catch(InvalidCarException e){
-                    System.out.println(e.getMessage());
+                rental.rent(city);
+                if(scanner.nextLine().equalsIgnoreCase("Y")){
+                    String carToRent = rental.findNearestCar(city).getCity();
+                    rental.rent(carToRent);
                 }
-            }
+                }
             if (input.equals("2")) {
                 System.out.println("Podaj miasto:");
                 String city = scanner.nextLine();
