@@ -10,13 +10,13 @@ public class Car {
     private int state;
     private String fromDate;
     private boolean rented;
-    private double DistanceFromOrigin;
+    private int DistanceFromOrigin;
 
-    public double getDistanceFromOrigin() {
+    public int getDistanceFromOrigin() {
         return DistanceFromOrigin;
     }
 
-    public void setDistanceFromOrigin(double distanceFromOrigin) {
+    public void setDistanceFromOrigin(int distanceFromOrigin) {
         DistanceFromOrigin = distanceFromOrigin;
     }
 

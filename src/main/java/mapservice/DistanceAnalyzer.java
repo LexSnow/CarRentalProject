@@ -1,27 +1,25 @@
 package mapservice;
 
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.fasterxml.jackson.databind.util.JSONPObject;
-import netscape.javascript.JSObject;
+import pl.adampolsa.mapservice.msg.request.GeoCodingDistanceRequest;
+import pl.adampolsa.mapservice.msg.request.GeoCodingLocRequest;
+import pl.adampolsa.mapservice.msg.response.GeocodingDistanceResponse;
+import pl.adampolsa.mapservice.msg.response.GeocodingLocRespEntry;
+import pl.adampolsa.mapservice.msg.response.GeocodingLocResponse;
 
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.stream.Collectors;
 
-import static java.nio.charset.Charset.defaultCharset;
 
 public class DistanceAnalyzer {
 
 
-    public JSONPObject getRespEntryJSON(String address) {
-        assert false;
-        JSONPObject respEntryJSON;
+    public GeocodingLocResponse getResponse(String address) {
+        ObjectMapper mapper = new ObjectMapper();
+        GeocodingLocResponse locResponse;
         try {
             URL url = new URL("http://10.10.10.83:8080/");
             HttpURLConnection http = (HttpURLConnection) url.openConnection();
@@ -29,22 +27,22 @@ public class DistanceAnalyzer {
             http.setDoOutput(true);
             http.setRequestProperty("Accept", "application/json");
             http.setRequestProperty("Content-type", "application/json");
-            byte[] out = createLocReqJSON(address, "1").getBytes(StandardCharsets.UTF_8);
+            byte[] out = mapper.writeValueAsBytes(createLocReqJSON(address));
             OutputStream stream = http.getOutputStream();
             stream.write(out);
             BufferedReader output = new BufferedReader(new InputStreamReader(http.getInputStream(), StandardCharsets.UTF_8));
-            String stringAsOutput = output.lines().collect(Collectors.joining());
-            JSONParser parser = new JSONParser();
-            respEntryJSON = (JSONObject) parser.parse(stringAsOutput);
+            locResponse = mapper.readValue(output, GeocodingLocResponse.class);
             http.disconnect();
-        } catch (IOException | ParseException e) {
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return respEntryJSON;
+        return locResponse;
     }
 
-    public Double calculateDistance(String address1, String address2) throws RuntimeException {
-        double distance;
+    public int calculateDistance(String address1, String address2) throws RuntimeException {
+        int distance;
+        GeocodingDistanceResponse distanceResponse;
+        ObjectMapper mapper = new ObjectMapper();
         try {
             URL url = new URL("http://10.10.10.83:8080/");
             HttpURLConnection http = (HttpURLConnection) url.openConnection();
@@ -52,50 +50,30 @@ public class DistanceAnalyzer {
             http.setDoOutput(true);
             http.setRequestProperty("Accept", "application/json");
             http.setRequestProperty("Content-type", "application/json");
-            byte[] out = createDistReqJSON(address1, address2).getBytes(defaultCharset());
+            byte[] out = mapper.writeValueAsBytes(createDistReqJSON(address1, address2));
             OutputStream stream = http.getOutputStream();
             stream.write(out);
-            BufferedReader output = new BufferedReader(new InputStreamReader(http.getInputStream()));
-            JsonParser parser = new JsonParser();
-            JSObject disRespJSON = new JSObject(output) {
-            };
+            BufferedReader output = new BufferedReader(new InputStreamReader(http.getInputStream(), StandardCharsets.UTF_8));
+            distanceResponse = mapper.readValue(output, GeocodingDistanceResponse.class);
             http.disconnect();
-            distance = (Double) disRespJSON.get("distanceKm");
-        } catch (IOException | ParseException e) {
+            distance = distanceResponse.getDistanceKm().intValue();
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
         return distance;
     }
 
-    public String createDistReqJSON(String address1, String address2) {
-        ObjectMapper mapper = new ObjectMapper();
-
-        double lat2 = Double.parseDouble(String.valueOf(getRespEntryJSON(address1).get("lat")));
-        double lon1 = Double.parseDouble(String.valueOf(getRespEntryJSON(address1).get("lon")));
-        double lon2 = Double.parseDouble(String.valueOf(getRespEntryJSON(address1).get("lon")));
-        ObjectNode req = mapper.createObjectNode();
-        req.put("lats", "[" + lat1 + ", " + lat2 + "]");
-        req.put("lons", "[" + lon1 + ", " + lon2 + "]");
-        String json;
-        try {
-            json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(req);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-        return json;
+    public GeoCodingDistanceRequest createDistReqJSON(String address1, String address2) {
+        GeoCodingDistanceRequest distanceRequest = new GeoCodingDistanceRequest();
+        distanceRequest.addPoint(getResponse(address1).getEntries().stream().mapToDouble(GeocodingLocRespEntry::getLat).sum(), getResponse(address1).getEntries().stream().mapToDouble(GeocodingLocRespEntry::getLon).sum());
+        distanceRequest.addPoint(getResponse(address2).getEntries().stream().mapToDouble(GeocodingLocRespEntry::getLat).sum(), getResponse(address2).getEntries().stream().mapToDouble(GeocodingLocRespEntry::getLon).sum());
+        return distanceRequest;
     }
 
-    public String createLocReqJSON(String address, String limit) {
-        ObjectMapper mapper = new ObjectMapper();
-        ObjectNode req = mapper.createObjectNode();
-        req.put("address", address);
-        req.put("limit", limit);
-        String json;
-        try {
-            json = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(req);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-        return json;
+    public GeoCodingLocRequest createLocReqJSON(String address) {
+        GeoCodingLocRequest locRequest = new GeoCodingLocRequest();
+        locRequest.setAddress(address);
+        locRequest.setLimit(1);
+        return locRequest;
     }
 }

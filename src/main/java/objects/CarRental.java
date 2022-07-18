@@ -129,7 +129,7 @@ public class CarRental implements CarRentalInterface {
             }
         }
         for (Car value : cars) {
-            double distance = analyzer.calculateDistance(city, value.getCity());
+            int distance = analyzer.calculateDistance(city, value.getCity());
             value.setDistanceFromOrigin(distance);
             assert nearestCar != null;
             if (value.getDistanceFromOrigin() < nearestCar.getDistanceFromOrigin() && !(nearestCar.isRented())) {
@@ -137,7 +137,7 @@ public class CarRental implements CarRentalInterface {
             }
         }
         assert nearestCar != null;
-        System.out.println("Najbliższy samochód jest w mieście " + nearestCar.getCity() + ", które jest oddalone o " + nearestCar.getDistanceFromOrigin() + "km. Czy chcesz go wypożyczyć? Y/N");
+        System.out.println("Najbliższy samochód jest w mieście " + nearestCar.getCity() + ", które jest oddalone o " + nearestCar.getDistanceFromOrigin() + " km. Czy chcesz go wypożyczyć? Y/N");
         return nearestCar;
 }
 
