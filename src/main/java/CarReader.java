@@ -20,13 +20,15 @@ public class CarReader {
             if (input.equals("1")) {
                 System.out.println("Jakie miasto?");
                 String city = scanner.nextLine();
-                rental.rent(city);
-                if(scanner.nextLine().equalsIgnoreCase("Y")){
-                    String carToRent = rental.findNearestCar(city).getCity();
-                    rental.rent(carToRent);
+                if (!rental.rent(city)) {
+                    Car nearestCar = rental.findNearestCar(city);
+                    System.out.println("Najbliższy samochód jest w mieście " + nearestCar.getCity() + ", które jest oddalone o " + nearestCar.getDistanceFromOrigin() + " km. Czy chcesz go wypożyczyć? Y/N");
+                    if (scanner.nextLine().equalsIgnoreCase("Y")) {
+                        rental.rentNearestCar(nearestCar);
+                    }
                 }
                 }
-            if (input.equals("2")) {
+                if (input.equals("2")) {
                 System.out.println("Podaj miasto:");
                 String city = scanner.nextLine();
                 System.out.println("Markę:");

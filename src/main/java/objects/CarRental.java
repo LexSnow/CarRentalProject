@@ -38,10 +38,7 @@ public class CarRental implements CarRentalInterface {
                         "\n6 - Kończymy na dziś");
     }
 
-    public void rent(String city) {
-        if (cars.stream().noneMatch(c -> c.getCity().equals(city) && !(c.isRented()))) {
-            findNearestCar(city);
-        }
+    public boolean rent(String city) {
         for (Car car : cars) {
             if (car.getCity().equals(city)) {
                 car.changeRentedState();
@@ -50,10 +47,10 @@ public class CarRental implements CarRentalInterface {
                 historyInput.setFromDate(dtf.format(now));
                 car.setFromDate(historyInput.getFromDate());
                 rentalHistory.add(historyInput);
-                break;
+                return true;
             }
         }
-
+        return false;
     }
 
     public void returnCar(String city, String brand, String model, int year, int state) throws InvalidCarException {
@@ -120,8 +117,8 @@ public class CarRental implements CarRentalInterface {
     public Car findNearestCar(String city) {
         DistanceAnalyzer analyzer = new DistanceAnalyzer();
         Car nearestCar = null;
-        for(Car car: cars){
-            if(!(car.isRented())){
+        for (Car car : cars) {
+            if (!(car.isRented())) {
                 nearestCar = car;
                 break;
             } else {
@@ -129,17 +126,23 @@ public class CarRental implements CarRentalInterface {
             }
         }
         for (Car value : cars) {
-            int distance = analyzer.calculateDistance(city, value.getCity());
-            value.setDistanceFromOrigin(distance);
-            assert nearestCar != null;
-            if (value.getDistanceFromOrigin() < nearestCar.getDistanceFromOrigin() && !(nearestCar.isRented())) {
-                nearestCar = value;
+            if (!(value.isRented())) {
+                int distance = analyzer.calculateDistance(city, value.getCity());
+                value.setDistanceFromOrigin(distance);
+                assert nearestCar != null;
+                if (value.getDistanceFromOrigin() < nearestCar.getDistanceFromOrigin()) {
+                    nearestCar = value;
+
+                }
             }
         }
         assert nearestCar != null;
-        System.out.println("Najbliższy samochód jest w mieście " + nearestCar.getCity() + ", które jest oddalone o " + nearestCar.getDistanceFromOrigin() + " km. Czy chcesz go wypożyczyć? Y/N");
         return nearestCar;
-}
+    }
+
+    public void rentNearestCar(Car car){
+        rent(car.getCity());
+    }
 
     public ArrayList<Car> readFile() {
         ArrayList<Car> cars = new ArrayList<>();
