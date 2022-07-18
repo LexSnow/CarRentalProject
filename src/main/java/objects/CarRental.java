@@ -1,6 +1,7 @@
 package objects;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
@@ -129,7 +130,12 @@ public class CarRental implements CarRentalInterface {
             }
         }
         for (Car value : cars) {
-            int distance = analyzer.calculateDistance(city, value.getCity());
+            int distance;
+            try {
+                distance = analyzer.calculateDistance(city, value.getCity());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             value.setDistanceFromOrigin(distance);
             assert nearestCar != null;
             if (value.getDistanceFromOrigin() < nearestCar.getDistanceFromOrigin() && !(nearestCar.isRented())) {
