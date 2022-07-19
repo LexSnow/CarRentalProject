@@ -11,9 +11,9 @@ import java.time.LocalDateTime;
 import java.util.Objects;
 import java.util.function.Predicate;
 
+import mapservice.JSONManagers.JacksonManager;
 import exceptions.InvalidCarException;
 import interfaces.CarRentalInterface;
-import mapservice.DistanceAnalyzer;
 
 public class CarRental implements CarRentalInterface {
     final DateTimeFormatter dtf;
@@ -114,8 +114,7 @@ public class CarRental implements CarRentalInterface {
         }
     }
 
-    public Car findNearestCar(String city) {
-        DistanceAnalyzer analyzer = new DistanceAnalyzer();
+    public Car findNearestCar(String city) throws Throwable {
         Car nearestCar = null;
         for (Car car : cars) {
             if (!(car.isRented())) {
@@ -126,13 +125,13 @@ public class CarRental implements CarRentalInterface {
             }
         }
         for (Car value : cars) {
+            JacksonManager jackson = new JacksonManager();
             if (!(value.isRented())) {
-                int distance = analyzer.calculateDistance(city, value.getCity());
+                int distance = jackson.calculateDistance(city, value.getCity());
                 value.setDistanceFromOrigin(distance);
                 assert nearestCar != null;
                 if (value.getDistanceFromOrigin() < nearestCar.getDistanceFromOrigin()) {
                     nearestCar = value;
-
                 }
             }
         }

@@ -1,16 +1,13 @@
 import objects.Car;
 import objects.CarRental;
 import exceptions.InvalidCarException;
-import mapservice.DistanceAnalyzer;
 
-import java.nio.charset.Charset;
-import java.sql.SQLOutput;
 import java.util.*;
 
 import static java.lang.Integer.parseInt;
 
 public class CarReader {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Throwable {
         Scanner scanner = new Scanner(System.in);
         CarRental rental = new CarRental();
         System.out.println("Witaj w wypożyczalni samochodów! Dostępne opcje:");
